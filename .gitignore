@@ -1,0 +1,21 @@
+# Environnement Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Base SQLite : journaux temporaires uniquement (projet.db est livré)
+*.db-journal
+*.db-wal
+*.db-shm
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+
+# Outils (garder la config, exclure les dépendances)
+.opencode/node_modules/

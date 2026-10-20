@@ -1,0 +1,37 @@
+/* Feuille dédiée à l'impression (liste des passagers).
+   Masque la navigation et les boutons ; le tableau reste lisible en noir
+   et blanc. */
+
+@media print {
+  header nav,
+  footer,
+  .pas-a-imprimer,
+  button,
+  .btn {
+    display: none !important;
+  }
+
+  body {
+    color: #000000;
+    background: #ffffff;
+    font-size: 12pt;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  th,
+  td {
+    border: 1px solid #000000;
+  }
+}
