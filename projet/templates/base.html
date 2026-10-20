@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titre %}Réservation de bus{% endblock %} — Billets interurbains</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block entetes_supplementaires %}{% endblock %}
+</head>
+<body>
+  <header>
+    <h1>Réservation de billets de bus interurbains</h1>
+    <nav aria-label="Navigation principale">
+      <ul>
+        <li><a href="{{ url_for('recherche') }}">Accueil</a></li>
+        <li><a href="{{ url_for('billets_formulaire') }}">Retrouver un billet</a></li>
+        <li><a href="{{ url_for('admin_connexion') }}">Administration</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="messages">
+          {% for categorie, message in messages %}
+            <li class="flash {{ categorie }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% block contenu %}{% endblock %}
+  </main>
+
+  <footer>
+    <p>Groupe 04 — Technologies Web et Applications. Agence reliant Douala, Yaoundé, Bafoussam, Kribi et Buea.</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

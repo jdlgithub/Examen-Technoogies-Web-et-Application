@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block titre %}Administration - Connexion{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>Connexion à l'administration</h2>
+  <form class="cadre" method="post" action="{{ url_for('admin_connexion') }}">
+    <div>
+      <label for="username">Nom d'utilisateur</label>
+      <input type="text" id="username" name="username" required autocomplete="username">
+    </div>
+    <div>
+      <label for="mot_de_passe">Mot de passe</label>
+      <input type="password" id="mot_de_passe" name="mot_de_passe" required autocomplete="current-password">
+    </div>
+    <button type="submit">Se connecter</button>
+  </form>
+</section>
+{% endblock %}
