@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block titre %}Retrouver un billet{% endblock %}
 
@@ -17,6 +17,7 @@
 
   {% if billet %}
     <h3>Votre billet</h3>
+    <div class="defilement">
     <table>
       <tbody>
         <tr><th scope="row">Trajet</th>
@@ -30,6 +31,7 @@
             <td><span class="code-reservation">{{ billet.code_reservation }}</span></td></tr>
       </tbody>
     </table>
+  </div>
   {% endif %}
 </section>
 {% endblock %}

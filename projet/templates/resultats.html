@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block titre %}Résultats de recherche{% endblock %}
 
@@ -7,6 +7,7 @@
   <h2>Voyages : {{ depart }} → {{ arrivee }} le {{ jour }}</h2>
 
   {% if resultats %}
+    <div class="defilement">
     <table>
       <caption class="visuellement-cache">Voyages disponibles avec places restantes</caption>
       <thead>
@@ -34,6 +35,7 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
   {% else %}
     <p class="flash">Aucun voyage ne correspond à votre recherche pour cette date.
       Essayez une autre date ou un autre trajet.</p>

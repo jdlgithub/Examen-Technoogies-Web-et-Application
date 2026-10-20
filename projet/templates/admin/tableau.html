@@ -1,4 +1,4 @@
-{% extends "admin/base_admin.html" %}
+﻿{% extends "admin/base_admin.html" %}
 
 {% block titre %}Administration - Tableau de bord{% endblock %}
 
@@ -6,7 +6,8 @@
 <section>
   <h2>Tableau de bord — derniers voyages</h2>
 
-  <table>
+  <div class="defilement">
+    <table>
     <thead>
       <tr>
         <th scope="col">Trajet</th>
@@ -46,5 +47,6 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 </section>
 {% endblock %}

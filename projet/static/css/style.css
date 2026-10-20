@@ -156,6 +156,12 @@ table {
   margin: 1rem 0;
 }
 
+/* Tableau trop large (petit écran 360 px) : défilement horizontal local,
+   la page elle-même ne déborde jamais */
+.defilement {
+  overflow-x: auto;
+}
+
 th,
 td {
   border: 1px solid var(--bordure);

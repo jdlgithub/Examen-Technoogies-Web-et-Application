@@ -1,4 +1,4 @@
-{% extends "admin/base_admin.html" %}
+﻿{% extends "admin/base_admin.html" %}
 
 {% block titre %}Administration - Statistiques{% endblock %}
 
@@ -13,14 +13,17 @@
 
   <div id="stats-remplissage" hidden>
     <h3>Taux de remplissage par trajet</h3>
+    <div class="defilement">
     <table>
       <thead><tr><th scope="col">Trajet</th><th scope="col">Taux</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
+  </div>
 
   <div id="stats-recette" hidden>
     <h3>Recette par trajet et par semaine</h3>
+    <div class="defilement">
     <table>
       <thead>
         <tr><th scope="col">Trajet</th><th scope="col">Semaine</th>
@@ -29,21 +32,26 @@
       <tbody></tbody>
     </table>
   </div>
+  </div>
 
   <div id="stats-heures" hidden>
     <h3>Heures de départ les plus demandées</h3>
+    <div class="defilement">
     <table>
       <thead><tr><th scope="col">Heure</th><th scope="col">Billets</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
+  </div>
 
   <div id="stats-jours" hidden>
     <h3>Billets vendus par jour — 14 derniers jours</h3>
+    <div class="defilement">
     <table>
       <thead><tr><th scope="col">Date</th><th scope="col">Billets</th></tr></thead>
       <tbody></tbody>
     </table>
+  </div>
   </div>
 </section>
 {% endblock %}

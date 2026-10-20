@@ -21,10 +21,9 @@ CHEMIN_DOSSIER = Path(__file__).resolve().parent
 CHEMIN_BDD = CHEMIN_DOSSIER / "projet.db"
 
 app = Flask(__name__)
-# SECRET_KEY via variable d'environnement ; repli de développement seulement
-app.config["SECRET_KEY"] = os.environ.get(
-    "SECRET_KEY", "cle-de-developpement-a-remplacer-en-production"
-)
+# SECRET_KEY hors source : variable d'environnement, sinon clé aléatoire
+# valide pour la session en cours (jamais un littéral versionné - constitution I)
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32)
 app.config["DEBUG"] = False  # exigé pour la version rendue (constitution I)
 
 # Expression de validation du téléphone : +2376XXXXXXXX ou 6XXXXXXXX
@@ -610,4 +609,4 @@ def page_introuvable(exception):
 
 # --- Point d'entrée ----------------------------------------------------------
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=False)  # jamais de page d'exception en production (S12)
