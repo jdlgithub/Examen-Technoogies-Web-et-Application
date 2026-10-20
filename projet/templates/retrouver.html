@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block titre %}Retrouver un billet{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>Retrouver mon billet</h2>
+
+  <form class="cadre" method="post" action="{{ url_for('billets_recherche') }}">
+    <div>
+      <label for="code">Code de réservation</label>
+      <input type="text" id="code" name="code" required
+             placeholder="Ex. Xy7-_kQ2mZa" autocomplete="off">
+    </div>
+    <button type="submit">Rechercher</button>
+  </form>
+
+  {% if billet %}
+    <h3>Votre billet</h3>
+    <table>
+      <tbody>
+        <tr><th scope="row">Trajet</th>
+            <td>{{ billet.ville_depart }} → {{ billet.ville_arrivee }}</td></tr>
+        <tr><th scope="row">Date</th><td>{{ billet.date }}</td></tr>
+        <tr><th scope="row">Heure de départ</th><td>{{ billet.heure }}</td></tr>
+        <tr><th scope="row">Statut du voyage</th><td>{{ billet.statut }}</td></tr>
+        <tr><th scope="row">Siège</th><td>n° {{ billet.numero_siege }}</td></tr>
+        <tr><th scope="row">Passager</th><td>{{ billet.nom }}</td></tr>
+        <tr><th scope="row">Code</th>
+            <td><span class="code-reservation">{{ billet.code_reservation }}</span></td></tr>
+      </tbody>
+    </table>
+  {% endif %}
+</section>
+{% endblock %}

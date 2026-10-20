@@ -286,6 +286,48 @@ def confirmation():
     return render_template("confirmation.html", billet=billet)
 
 
+# --- Parcours public : retrouver un billet par code (US3) -------------------
+def chercher_billet(code):
+    """Retourne la ligne du billet correspondant au code, ou None."""
+    return get_db().execute(
+        """SELECT bl.nom, bl.numero_siege, bl.telephone, bl.code_reservation,
+                  v.date, v.heure, v.statut,
+                  t.ville_depart, t.ville_arrivee
+           FROM billets bl
+           JOIN voyages v ON v.id = bl.voyage_id
+           JOIN trajets t ON t.id = v.trajet_id
+           WHERE bl.code_reservation = ?""",
+        (code,),
+    ).fetchone()
+
+
+@app.route("/billets")
+def billets_formulaire():
+    """Formulaire « retrouver mon billet » (FR-006)."""
+    return render_template("retrouver.html", billet=None)
+
+
+@app.route("/billets/recherche", methods=["POST"])
+def billets_recherche():
+    """Contrôle du code saisi puis redirection vers la fiche billet."""
+    code = request.form.get("code", "").strip()
+    if not code:
+        flash("Veuillez saisir votre code de réservation.", "erreur")
+        return redirect(url_for("billets_formulaire"))
+    return redirect(url_for("billets_detail", code=code))
+
+
+@app.route("/billets/<code>")
+def billets_detail(code):
+    """Affiche le billet correspondant au code (FR-006)."""
+    billet = chercher_billet(code)
+    if billet is None:
+        flash("Code de réservation introuvable. Vérifiez votre code.",
+              "erreur")
+        return redirect(url_for("billets_formulaire"))
+    return render_template("retrouver.html", billet=billet)
+
+
 # --- Page d'erreur 404 personnalisée ----------------------------------------
 @app.errorhandler(404)
 def page_introuvable(exception):
