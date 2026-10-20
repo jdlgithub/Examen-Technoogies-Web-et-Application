@@ -19,3 +19,7 @@ Thumbs.db
 
 # Outils (garder la config, exclure les dépendances)
 .opencode/node_modules/
+
+.Sn Technoogie Web et Application.txt
+.specify/
+.opencode/
