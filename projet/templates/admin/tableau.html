@@ -1,0 +1,34 @@
+{% extends "admin/base_admin.html" %}
+
+{% block titre %}Administration - Tableau de bord{% endblock %}
+
+{% block contenu_admin %}
+<section>
+  <h2>Tableau de bord — derniers voyages</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Trajet</th>
+        <th scope="col">Date</th>
+        <th scope="col">Heure</th>
+        <th scope="col">Bus</th>
+        <th scope="col">Statut</th>
+        <th scope="col">Billets</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for voyage in voyages %}
+        <tr>
+          <td>{{ voyage.ville_depart }} → {{ voyage.ville_arrivee }}</td>
+          <td>{{ voyage.date }}</td>
+          <td>{{ voyage.heure }}</td>
+          <td>{{ voyage.immatriculation }} ({{ voyage.type_bus }})</td>
+          <td>{{ voyage.statut }}</td>
+          <td>{{ voyage.billets_vendus }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

@@ -328,6 +328,118 @@ def billets_detail(code):
     return render_template("retrouver.html", billet=billet)
 
 
+# --- Espace d'administration : connexion et programmation (US4) -------------
+@app.route("/admin/connexion", methods=["GET", "POST"])
+def admin_connexion():
+    """Connexion à l'administration ; mots de passe hachés (FR-009)."""
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        mot_de_passe = request.form.get("mot_de_passe", "")
+        administrateur = get_db().execute(
+            "SELECT id, password_hash FROM admins WHERE username = ?",
+            (username,),
+        ).fetchone()
+        if (administrateur is None
+                or not check_password_hash(
+                    administrateur["password_hash"], mot_de_passe)):
+            flash("Identifiants incorrects.", "erreur")
+            return redirect(url_for("admin_connexion"))
+        session["admin_id"] = administrateur["id"]
+        session["admin_nom"] = username
+        flash(f"Bienvenue, {username}.", "succes")
+        return redirect(url_for("admin_tableau"))
+    return render_template("admin/login.html")
+
+
+@app.route("/admin/deconnexion", methods=["POST"])
+def admin_deconnexion():
+    """Détruit la session administrateur (mutation en POST, constitution I)."""
+    session.clear()
+    flash("Vous êtes déconnecté.", "succes")
+    return redirect(url_for("recherche"))
+
+
+@app.route("/admin")
+@administrateur_requis
+def admin_tableau():
+    """Tableau de bord : derniers voyages et raccourcis (protégé, FR-008)."""
+    voyages = get_db().execute(
+        """SELECT v.id, v.date, v.heure, v.statut,
+                  t.ville_depart, t.ville_arrivee,
+                  b.immatriculation, b.type AS type_bus,
+                  (SELECT COUNT(*) FROM billets bl WHERE bl.voyage_id = v.id)
+                      AS billets_vendus
+           FROM voyages v
+           JOIN trajets t ON t.id = v.trajet_id
+           JOIN bus b ON b.id = v.bus_id
+           ORDER BY v.date DESC, v.heure
+           LIMIT 20"""
+    ).fetchall()
+    return render_template("admin/tableau.html", voyages=voyages)
+
+
+@app.route("/admin/voyages/nouveau", methods=["GET", "POST"])
+@administrateur_requis
+def admin_voyage_nouveau():
+    """Programmation d'un nouveau voyage par l'administrateur (FR-010)."""
+    bdd = get_db()
+    if request.method == "POST":
+        trajet_id = request.form.get("trajet_id", "")
+        bus_id = request.form.get("bus_id", "")
+        jour = request.form.get("date", "")
+        heure = request.form.get("heure", "")
+
+        # Revérification serveur des quatre champs (constitution I)
+        erreurs = []
+        try:
+            trajet_id = int(trajet_id)
+            existe = bdd.execute(
+                "SELECT 1 FROM trajets WHERE id = ?", (trajet_id,)
+            ).fetchone()
+            if existe is None:
+                erreurs.append("Trajet inconnu.")
+        except ValueError:
+            erreurs.append("Trajet invalide.")
+        try:
+            bus_id = int(bus_id)
+            existe = bdd.execute(
+                "SELECT 1 FROM bus WHERE id = ?", (bus_id,)
+            ).fetchone()
+            if existe is None:
+                erreurs.append("Bus inconnu.")
+        except ValueError:
+            erreurs.append("Bus invalide.")
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", jour):
+            erreurs.append("Date invalide (format AAAA-MM-JJ).")
+        if not re.match(r"^\d{2}:\d{2}$", heure):
+            erreurs.append("Heure invalide (format HH:MM).")
+        if erreurs:
+            for message in erreurs:
+                flash(message, "erreur")
+        else:
+            bdd.execute(
+                """INSERT INTO voyages (trajet_id, bus_id, date, heure, statut)
+                   VALUES (?, ?, ?, ?, 'prévu')""",
+                (trajet_id, bus_id, jour, heure),
+            )
+            bdd.commit()
+            flash("Voyage programmé avec succès.", "succes")
+            return redirect(url_for("admin_tableau"))
+
+    trajets = bdd.execute(
+        """SELECT id, ville_depart || ' → ' || ville_arrivee AS intitule
+           FROM trajets ORDER BY intitule"""
+    ).fetchall()
+    buses = bdd.execute(
+        """SELECT id, immatriculation || ' (' || type || ', ' ||
+                  nombre_places || ' places)' AS intitule
+           FROM bus ORDER BY immatriculation"""
+    ).fetchall()
+    return render_template(
+        "admin/programmation.html", trajets=trajets, buses=buses
+    )
+
+
 # --- Page d'erreur 404 personnalisée ----------------------------------------
 @app.errorhandler(404)
 def page_introuvable(exception):

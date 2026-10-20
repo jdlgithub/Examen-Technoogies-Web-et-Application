@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block titre %}Administration{% endblock %}
+
+{% block liens_navigation %}
+  <li><strong>Admin : {{ session.admin_nom }}</strong></li>
+  <li><a href="{{ url_for('admin_tableau') }}">Tableau de bord</a></li>
+  <li><a href="{{ url_for('admin_voyage_nouveau') }}">Programmer un voyage</a></li>
+  {% block liens_admin %}{% endblock %}
+  <li>
+    <form method="post" action="{{ url_for('admin_deconnexion') }}" style="display:inline">
+      <button type="submit" class="secondary" style="margin-top:0">Déconnexion</button>
+    </form>
+  </li>
+{% endblock %}
+
+{% block contenu %}
+  {% block contenu_admin %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+
+{% block titre %}Administration - Programmer un voyage{% endblock %}
+
+{% block contenu_admin %}
+<section>
+  <h2>Programmer un nouveau voyage</h2>
+
+  <form class="cadre" method="post" action="{{ url_for('admin_voyage_nouveau') }}">
+    <div>
+      <label for="trajet_id">Trajet</label>
+      <select id="trajet_id" name="trajet_id" required>
+        {% for trajet in trajets %}
+          <option value="{{ trajet.id }}">{{ trajet.intitule }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="bus_id">Bus</label>
+      <select id="bus_id" name="bus_id" required>
+        {% for bus in buses %}
+          <option value="{{ bus.id }}">{{ bus.intitule }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="formulaire-ligne">
+      <div>
+        <label for="date">Date</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+      <div>
+        <label for="heure">Heure de départ</label>
+        <input type="time" id="heure" name="heure" required>
+      </div>
+    </div>
+    <button type="submit">Programmer</button>
+  </form>
+</section>
+{% endblock %}
