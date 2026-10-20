@@ -8,7 +8,7 @@ import os
 import re
 import secrets
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 from functools import wraps
 from pathlib import Path
 
@@ -512,6 +512,93 @@ def admin_parti(voyage_id):
     bdd.commit()
     flash("Voyage marqué comme parti.", "succes")
     return redirect(url_for("admin_tableau"))
+
+
+# --- Statistiques d'exploitation (US6) --------------------------------------
+@app.route("/api/statistiques")
+def api_statistiques():
+    """Les 4 statistiques du sujet au format JSON (contrat api.md §2)."""
+    bdd = get_db()
+
+    # Taux de remplissage moyen par trajet (billets / capacité cumulée)
+    remplissage = bdd.execute(
+        """SELECT t.ville_depart || ' → ' || t.ville_arrivee AS trajet,
+                  ROUND(COALESCE(
+                    CAST(COUNT(bl.id) AS REAL) / NULLIF(SUM(b.nombre_places), 0),
+                  0), 3) AS taux
+           FROM trajets t
+           LEFT JOIN voyages v ON v.trajet_id = t.id
+           LEFT JOIN bus b ON b.id = v.bus_id
+           LEFT JOIN billets bl ON bl.voyage_id = v.id
+           GROUP BY t.id
+           ORDER BY trajet"""
+    ).fetchall()
+
+    # Recette par trajet et par semaine (prix appliqué selon le bus)
+    recette = bdd.execute(
+        """SELECT t.ville_depart || ' → ' || t.ville_arrivee AS trajet,
+                  strftime('%W', v.date) AS semaine,
+                  SUM(CASE WHEN b.type = 'vip' THEN t.prix_vip
+                           ELSE t.prix_classique END) AS recette
+           FROM billets bl
+           JOIN voyages v ON v.id = bl.voyage_id
+           JOIN trajets t ON t.id = v.trajet_id
+           JOIN bus b ON b.id = v.bus_id
+           GROUP BY t.id, semaine
+           ORDER BY semaine, trajet"""
+    ).fetchall()
+
+    # Heures de départ les plus demandées
+    heures = bdd.execute(
+        """SELECT v.heure, COUNT(*) AS nb_billets
+           FROM billets bl
+           JOIN voyages v ON v.id = bl.voyage_id
+           GROUP BY v.heure
+           ORDER BY nb_billets DESC, v.heure
+           LIMIT 10"""
+    ).fetchall()
+
+    # Billets vendus par jour sur les 14 derniers jours (jours vides = 0)
+    jours = bdd.execute(
+        """SELECT date_achat AS date, COUNT(*) AS nb_billets
+           FROM billets
+           WHERE date_achat >= date('now', '-13 days')
+             AND date_achat <= date('now')
+           GROUP BY date_achat"""
+    ).fetchall()
+    connus = {ligne["date"]: ligne["nb_billets"] for ligne in jours}
+    billets_14_jours = []
+    for decalage in range(13, -1, -1):
+        jour = date.today() - timedelta(days=decalage)
+        cle = jour.isoformat()
+        billets_14_jours.append({
+            "date": cle,
+            "nb_billets": connus.get(cle, 0),
+        })
+
+    return jsonify({
+        "remplissage_par_trajet": [
+            {"trajet": ligne["trajet"], "taux": ligne["taux"]}
+            for ligne in remplissage
+        ],
+        "recette_par_trajet_semaine": [
+            {"trajet": ligne["trajet"], "semaine": ligne["semaine"],
+             "recette": int(ligne["recette"])}
+            for ligne in recette
+        ],
+        "heures_demandees": [
+            {"heure": ligne["heure"], "nb_billets": ligne["nb_billets"]}
+            for ligne in heures
+        ],
+        "billets_14_jours": billets_14_jours,
+    })
+
+
+@app.route("/admin/statistiques")
+@administrateur_requis
+def admin_statistiques():
+    """Page d'affichage des statistiques (protégée, alimentée par fetch)."""
+    return render_template("admin/statistiques.html")
 
 
 # --- Page d'erreur 404 personnalisée ----------------------------------------

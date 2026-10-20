@@ -1,0 +1,95 @@
+{% extends "admin/base_admin.html" %}
+
+{% block titre %}Administration - Statistiques{% endblock %}
+
+{% block liens_admin %}
+  <li><a href="{{ url_for('admin_statistiques') }}">Statistiques</a></li>
+{% endblock %}
+
+{% block contenu_admin %}
+<section>
+  <h2>Statistiques d'exploitation</h2>
+  <p id="chargement-stats">Chargement des statistiques…</p>
+
+  <div id="stats-remplissage" hidden>
+    <h3>Taux de remplissage par trajet</h3>
+    <table>
+      <thead><tr><th scope="col">Trajet</th><th scope="col">Taux</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="stats-recette" hidden>
+    <h3>Recette par trajet et par semaine</h3>
+    <table>
+      <thead>
+        <tr><th scope="col">Trajet</th><th scope="col">Semaine</th>
+            <th scope="col">Recette (FCFA)</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="stats-heures" hidden>
+    <h3>Heures de départ les plus demandées</h3>
+    <table>
+      <thead><tr><th scope="col">Heure</th><th scope="col">Billets</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="stats-jours" hidden>
+    <h3>Billets vendus par jour — 14 derniers jours</h3>
+    <table>
+      <thead><tr><th scope="col">Date</th><th scope="col">Billets</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Chargement des statistiques depuis /api/statistiques (fetch, FR-013)
+document.addEventListener("DOMContentLoaded", function () {
+  var chargement = document.getElementById("chargement-stats");
+
+  function remplirTable(idSection, lignes, colonnes) {
+    var section = document.getElementById(idSection);
+    var corps = section.querySelector("tbody");
+    lignes.forEach(function (ligne) {
+      var tr = document.createElement("tr");
+      colonnes.forEach(function (colonne) {
+        var td = document.createElement("td");
+        td.textContent = ligne[colonne];
+        tr.appendChild(td);
+      });
+      corps.appendChild(tr);
+    });
+    section.hidden = false;
+  }
+
+  fetch("/api/statistiques")
+    .then(function (reponse) {
+      if (!reponse.ok) throw new Error("Serveur indisponible");
+      return reponse.json();
+    })
+    .then(function (donnees) {
+      chargement.hidden = true;
+      remplirTable("stats-remplissage", donnees.remplissage_par_trajet,
+                   ["trajet", "taux"]);
+      remplirTable("stats-recette", donnees.recette_par_trajet_semaine,
+                   ["trajet", "semaine", "recette"]);
+      remplirTable("stats-heures", donnees.heures_demandees,
+                   ["heure", "nb_billets"]);
+      remplirTable("stats-jours", donnees.billets_14_jours,
+                   ["date", "nb_billets"]);
+    })
+    .catch(function (erreur) {
+      chargement.textContent =
+        "Impossible de charger les statistiques (" + erreur.message + ").";
+      chargement.classList.add("flash", "erreur");
+    });
+});
+</script>
+{% endblock %}
