@@ -1,0 +1,227 @@
+Examen de Technologie Web 
+
+PROJET:Réservation de billets de bus interurbains
+
+Contexte:Une agence de voyage relie Douala, Yaoundé, Bafoussam, Kribi et Buea. Les voyageurs font la
+queue à la gare pour acheter leur billet, sans savoir s’il reste des places. L’agence veut vendre
+ses billets en ligne, avec le choix du siège.
+
+1. Base de données attendee
+• trajets : ville de départ, ville d’arrivée, durée, prix (classique et VIP).
+
+• bus : immatriculation (unique), nombre de places, type (classique, VIP).
+
+• voyages : trajet, bus, date, heure de départ, statut (prévu, parti, annulé).
+
+• billets : voyage, numéro de siège, nom et téléphone du voyageur, numéro de pièce d’identité,
+code de réservation, date d’achat.
+
+2. Fonctionnalités
+
+Données de test (volumes minimum):
+• 8trajets, 6 bus
+• 60 voyages sur trois semaines
+• 400 billets
+
+Partie publique
+• recherche d’un voyage (départ, arrivée, date) avec les places restantes
+• plan du bus et choix du siège
+• achat du billet et affichage du code de réservation
+• retrouver son billet avec le code
+
+Espace d’administration (connexion)
+• programmation des voyages
+• liste des passagers d’un voyage (imprimable)
+• annulation d’un voyage
+
+JavaScript et API JSON
+• plan des sièges dessiné en HTML et CSS, sièges pris grisés, chargé par fetch sur /api/voyages/<id>/sieges
+• vérification du formulaire
+• /api/statistiques
+
+3. Statistiques attendues
+Taux de remplissage moyen par trajet.
+Recette par trajet et par semaine.
+Les heures de départ les plus demandées.
+4. Nombre de billets vendus par jour sur les 14 derniers jours.
+
+Attendu du prof: 
+Un siège ne peut être vendu deux fois pour le même voyage (UNIQUE (voyage, siège)), et
+un numéro de siège n’existe que s’il est compris entre 1 et le nombre de places du bus. Le code
+de réservation doit être unique et difficile à deviner (module secrets de Python).
+
+Pour aller plus loin (bonus)
+Billet imprimable avec un QR code; réduction pour un aller-retour.
+
+
+1.2 Ce que chaque etudiant doit render
+
+1. Rapport PowerPoint :Le rapport du projet sous forme de diaporama : présentation du sujet, de la conception, de ce qui a été réalisé, avec des captures d’écran des résultats.
+La première diapositive contient la liste des membres du groupe.
+
+
+2. Projet testable: Le code complet de l’application (Flask, gabarits, CSS, JavaScript), la
+base SQLite remplie de données de test, son export SQL, un README.md d’installation et un fichier requirements.txt. L’enseignant doit pouvoir lancer le site en suivant uniquement le README.
+
+
+3. Captures d’écran: Les captures utilisées dans le rapport, dont des captures sur ordinateur et sur téléphone, rangées dans un dossier.
+
+4. Video: Une vidéo explicative de 5 à 10 minutes qui présente le projet et montre le site en fonctionnement.
+
+Arboressance du projet: 
+
+GIT-GLO-5-Groupe04/ <- Filière-Niveau-NomGroupe
++-- rapport_Groupe04.pptx
++-- video_demo.mp4
++-- projet/
+| +-- README.md <- installation, lancement, comptes de test
+| +-- requirements.txt <- flask (pip freeze > requirements.txt)
+| +-- app.py <- l'application Flask
+| +-- schema.sql <- création des tables
+| +-- donnees_test.py <- remplit la base de données de test
+| +-- projet.db <- la base SQLite déjà remplie
+| +-- export_projet.sql <- export complet de la base
+| +-- static/
+| | +-- css/
+| | +-- js/
+| | `-- images/
+| `-- templates/ <- les gabarits Jinja2
+`-- captures/
++-- ordinateur/
+`-- telephone/
+
+
+1.4 Le rapport PowerPoint
+
+Le diaporama tient lieu de rapport écrit : il doit pouvoir être lu seul, sans explication orale.
+
+1. Page de garde: Titre et numéro du projet, nom du groupe, filière et niveau, nom de la matière,nom de l’enseignant, et la liste des membres du groupe (nom, prénom,matricule, rôle dans le projet).
+
+2. Contexte : Le problème à résoudre, en quelques phrases, avec vos mots.
+
+3. Objectifs: Ce que votre application permet de faire, et pour qui (visiteur, administrateur).
+
+4. Plan du site: Le schéma des pages et des liens entre elles.
+
+5 et 6. Base de données: Le schéma des tables et de leurs liens, les contraintes importantes (clés, UNIQUE,CHECK).
+
+7. Routes : Le tableau des routes Flask : adresse, méthode, rôle.
+
+8 à 13. Réalisations: Pour chaque fonctionnalité importante : une capture et, si utile, l’extrait de code significatif.
+
+14. Adaptatif: Les mêmes pages en captures sur téléphone et sur ordinateur.
+
+15. JavaScript et API: La vérification des formulaires et l’appel fetch, avec captures.
+
+16. Sécurité: Ce que vous avez mis en place (vérifications serveur, requêtes paramétrées,mots de passe hachés,suppressions en POST) et une démonstration d’une saisie refusée.
+
+17. Validation: Capture du validateur du W3C sans erreur sur vos pages principales.
+
+18. Difficultés: Les problèmes rencontrés et comment vous les avez résolus.
+
+19. Répartition du travail: Qui a fait quoi.
+
+20. Conclusion: Bilan, limites et améliorations possibles.
+
+
+1.5 La video
+Durée : 5 à 10 minutes. Format MP4, qualité 720p au minimum, son clair.
+
+Déroulé conseillé : présentation du projet (1 min); parcours du site comme un visiteur, puis
+comme un administrateur (3 à 5 min); démonstration d’une saisie refusée et de l’affichage sur
+téléphone (1 à 2 min); explication d’un extrait de code (1 à 2 min); conclusion (30 s).
+
+• Plusieurs membres du groupe doivent prendre la parole.
+
+• Unenregistreur d’écran gratuit suffit (par exemple OBS Studio, ou l’outil intégré au système).
+
+
+1.6 Exigences techniques communes à tous les projets
+
+Le minimum obligatoire:
+
+• Serveur : Python 3, Flask, SQLite (module sqlite3). Au moins trois tables liées
+par des clés étrangères, avec des contraintes (NOT NULL, UNIQUE, CHECK).
+
+• Gabarits : un base.html dont héritent toutes les pages; messages flash; page d’erreur
+404 personnalisée.
+
+• HTML:balises sémantiques, un alt sur chaque image, un label sur chaque champ,
+pages principales validées par le validateur du W3C.
+
+• CSS : dans des fichiers séparés, démarche mobile d’abord, au moins deux points de
+rupture; le site est confortable sur téléphone.
+
+• JavaScript : vérification d’au moins un formulaire avant l’envoi, et au moins une
+fonctionnalité qui utilise fetch sur une route de votre API.
+
+• API : au moins deux routes qui renvoient du JSON (jsonify).
+forme d’empreinte (generate_password_hash).
+
+• Espace d’administration protégé par une connexion; mots de passe stockés sous
+• Sécurité : toutes les données revérifiées sur le serveur, requêtes SQL toujours paramétrées (?), suppressions et modifications uniquement en POST, debug=False dans la version rendue.
+
+• Données de test : un script donnees_test.py qui remplit la base au moins avec les
+volumes demandés dans le sujet.
+
+• Code commenté en français, fonctions aux noms clairs.
+
+
+Réussir son projet : méthode et outils
+
+2.1 Les étapes du projet
+
+2.2 Générer des données de test realists
+
+2.3 Créer le compte administrateur de test
+
+2.4 Exporter la base pour le rendu
+
+2.5 Un README qui fonctionne
+
+
+Checklist avant la remise
+
+Le site se lance sur un autre ordinateur en suivant uniquement le README.md.
+
+Chaque table contient au moins le nombre de lignes demandé.
+
+Toutes les fonctionnalités du sujet sont présentes et fonctionnent, y compris les cas d’erreur.
+
+Les pages principales passent le validateur du W3C.
+
+Le site est confortable sur téléphone (captures dans captures/telephone).
+
+L’espace d’administration refuse l’accès sans connexion.
+
+debug=False dans app.py; aucun dossier venv sur la clé.
+
+La première diapositive contient la liste complète des membres du groupe.
+
+La vidéo dure entre 5 et 10 minutes et le son est audible.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
