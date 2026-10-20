@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block titre %}Rechercher un voyage{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>Où souhaitez-vous voyager ?</h2>
+  <form class="cadre" method="get" action="{{ url_for('resultats') }}">
+    <div class="formulaire-ligne">
+      <div>
+        <label for="depart">Ville de départ</label>
+        <select id="depart" name="depart" required>
+          {% for ville in villes %}
+            <option value="{{ ville }}">{{ ville }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="arrivee">Ville d'arrivée</label>
+        <select id="arrivee" name="arrivee" required>
+          {% for ville in villes %}
+            <option value="{{ ville }}">{{ ville }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="date">Date du voyage</label>
+        <input type="date" id="date" name="date" required>
+      </div>
+    </div>
+    <button type="submit">Rechercher</button>
+  </form>
+</section>
+{% endblock %}

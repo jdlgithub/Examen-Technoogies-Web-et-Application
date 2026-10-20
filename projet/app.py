@@ -66,6 +66,67 @@ def administrateur_requis(vue):
     return enveloppe
 
 
+# --- Parcours public : recherche de voyages (US1) ---------------------------
+@app.route("/")
+def recherche():
+    """Page d'accueil : formulaire de recherche (départ, arrivée, date)."""
+    return render_template("index.html", villes=VILLES)
+
+
+@app.route("/resultats")
+def resultats():
+    """Liste des voyages disponibles pour un trajet à une date (FR-001)."""
+    depart = request.args.get("depart", "")
+    arrivee = request.args.get("arrivee", "")
+    jour = request.args.get("date", "")
+
+    # Contrôle serveur des critères reçus (constitution I)
+    if not depart or not arrivee or not jour:
+        flash("Veuillez renseigner le départ, l'arrivée et la date.", "erreur")
+        return redirect(url_for("recherche"))
+    if depart not in VILLES or arrivee not in VILLES or depart == arrivee:
+        flash("Ville de départ ou d'arrivée invalide.", "erreur")
+        return redirect(url_for("recherche"))
+
+    bdd = get_db()
+    voyages = bdd.execute(
+        """SELECT v.id, v.date, v.heure, b.type AS type_bus,
+                  b.nombre_places,
+                  t.duree_minutes, t.prix_classique, t.prix_vip,
+                  t.ville_depart, t.ville_arrivee,
+                  (b.nombre_places - COUNT(bl.id)) AS places_restantes
+           FROM voyages v
+           JOIN trajets t ON t.id = v.trajet_id
+           JOIN bus b ON b.id = v.bus_id
+           LEFT JOIN billets bl ON bl.voyage_id = v.id
+           WHERE t.ville_depart = ? AND t.ville_arrivee = ?
+             AND v.date = ? AND v.statut = 'prévu' AND v.date >= ?
+           GROUP BY v.id
+           HAVING places_restantes > 0
+           ORDER BY v.heure""",
+        (depart, arrivee, jour, date.today().isoformat()),
+    ).fetchall()
+
+    # Prix appliqué selon le type du bus (VIP ou classique)
+    resultats = []
+    for ligne in voyages:
+        resultats.append({
+            "id": ligne["id"],
+            "heure": ligne["heure"],
+            "duree_minutes": ligne["duree_minutes"],
+            "type_bus": ligne["type_bus"],
+            "prix": (ligne["prix_vip"] if ligne["type_bus"] == "vip"
+                     else ligne["prix_classique"]),
+            "places_restantes": ligne["places_restantes"],
+        })
+
+    return render_template(
+        "resultats.html",
+        resultats=resultats,
+        depart=depart, arrivee=arrivee, jour=jour,
+    )
+
+
 # --- Page d'erreur 404 personnalisée ----------------------------------------
 @app.errorhandler(404)
 def page_introuvable(exception):

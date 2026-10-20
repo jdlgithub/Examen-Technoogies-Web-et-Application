@@ -225,6 +225,19 @@ footer {
   font-size: 0.85rem;
 }
 
+/* Masqué à l'écran mais lu par les lecteurs d'écran */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* --- Points de rupture (mobile-first) --- */
 @media (min-width: 600px) {
   header h1 {

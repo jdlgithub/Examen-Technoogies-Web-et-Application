@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block titre %}Résultats de recherche{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>Voyages : {{ depart }} → {{ arrivee }} le {{ jour }}</h2>
+
+  {% if resultats %}
+    <table>
+      <caption class="visuellement-cache">Voyages disponibles avec places restantes</caption>
+      <thead>
+        <tr>
+          <th scope="col">Départ</th>
+          <th scope="col">Durée</th>
+          <th scope="col">Bus</th>
+          <th scope="col">Prix</th>
+          <th scope="col">Places restantes</th>
+          <th scope="col"><span class="visuellement-cache">Action</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for voyage in resultats %}
+          <tr>
+            <td>{{ voyage.heure }}</td>
+            <td>{{ voyage.duree_minutes }} min</td>
+            <td>{{ voyage.type_bus }}</td>
+            <td>{{ voyage.prix }} FCFA</td>
+            <td>{{ voyage.places_restantes }}</td>
+            <td>
+              <a class="btn" href="/voyages/{{ voyage.id }}/acheter">Choisir un siège</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="flash">Aucun voyage ne correspond à votre recherche pour cette date.
+      Essayez une autre date ou un autre trajet.</p>
+  {% endif %}
+
+  <p><a href="{{ url_for('recherche') }}">Nouvelle recherche</a></p>
+</section>
+{% endblock %}

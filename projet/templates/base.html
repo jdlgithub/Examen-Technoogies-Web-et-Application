@@ -16,8 +16,7 @@
     <nav aria-label="Navigation principale">
       <ul>
         <li><a href="{{ url_for('recherche') }}">Accueil</a></li>
-        <li><a href="{{ url_for('billets_formulaire') }}">Retrouver un billet</a></li>
-        <li><a href="{{ url_for('admin_connexion') }}">Administration</a></li>
+        {% block liens_navigation %}{% endblock %}
       </ul>
     </nav>
   </header>
