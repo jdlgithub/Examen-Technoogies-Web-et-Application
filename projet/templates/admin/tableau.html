@@ -15,6 +15,7 @@
         <th scope="col">Bus</th>
         <th scope="col">Statut</th>
         <th scope="col">Billets</th>
+        <th scope="col">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -26,6 +27,21 @@
           <td>{{ voyage.immatriculation }} ({{ voyage.type_bus }})</td>
           <td>{{ voyage.statut }}</td>
           <td>{{ voyage.billets_vendus }}</td>
+          <td>
+            <a class="btn secondary" style="margin-top:0"
+               href="{{ url_for('admin_passagers', voyage_id=voyage.id) }}">Passagers</a>
+            {% if voyage.statut == 'prévu' %}
+              <form method="post" style="display:inline"
+                    action="{{ url_for('admin_parti', voyage_id=voyage.id) }}">
+                <button type="submit" class="secondary" style="margin-top:0">Parti</button>
+              </form>
+              <form method="post" style="display:inline"
+                    action="{{ url_for('admin_annuler', voyage_id=voyage.id) }}"
+                    onsubmit="return confirm('Annuler ce voyage ?');">
+                <button type="submit" style="margin-top:0">Annuler</button>
+              </form>
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </tbody>

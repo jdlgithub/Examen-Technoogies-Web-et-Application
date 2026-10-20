@@ -1,0 +1,52 @@
+{% extends "admin/base_admin.html" %}
+
+{% block titre %}Administration - Passagers{% endblock %}
+
+{% block liens_admin %}
+  <li><a href="{{ url_for('admin_passagers', voyage_id=voyage.id) }}">Passagers</a></li>
+{% endblock %}
+
+{% block contenu_admin %}
+<section>
+  <h2>Passagers — {{ voyage.ville_depart }} → {{ voyage.ville_arrivee }}
+      le {{ voyage.date }} à {{ voyage.heure }}</h2>
+
+  <p class="pas-a-imprimer">
+    Bus {{ voyage.immatriculation }} — {{ passagers|length }} passager(s)
+    sur {{ voyage.nombre_places }} places — statut : {{ voyage.statut }}.
+  </p>
+
+  <p class="pas-a-imprimer">
+    <button type="button" onclick="window.print()">Imprimer la liste</button>
+  </p>
+
+  {% if passagers %}
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Siège</th>
+          <th scope="col">Nom</th>
+          <th scope="col">Téléphone</th>
+          <th scope="col">Code de réservation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for passager in passagers %}
+          <tr>
+            <td>{{ passager.numero_siege }}</td>
+            <td>{{ passager.nom }}</td>
+            <td>{{ passager.telephone }}</td>
+            <td>{{ passager.code_reservation }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Aucun passager pour ce voyage.</p>
+  {% endif %}
+
+  <p class="pas-a-imprimer">
+    <a class="btn secondary" href="{{ url_for('admin_tableau') }}">Retour au tableau de bord</a>
+  </p>
+</section>
+{% endblock %}

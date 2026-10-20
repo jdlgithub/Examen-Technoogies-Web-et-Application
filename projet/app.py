@@ -440,6 +440,80 @@ def admin_voyage_nouveau():
     )
 
 
+# --- Espace d'administration : passagers et annulation (US5) ----------------
+@app.route("/admin/voyages/<int:voyage_id>/passagers")
+@administrateur_requis
+def admin_passagers(voyage_id):
+    """Liste imprimable des passagers d'un voyage (FR-011)."""
+    bdd = get_db()
+    voyage = bdd.execute(
+        """SELECT v.id, v.date, v.heure, v.statut,
+                  t.ville_depart, t.ville_arrivee,
+                  b.immatriculation, b.nombre_places
+           FROM voyages v
+           JOIN trajets t ON t.id = v.trajet_id
+           JOIN bus b ON b.id = v.bus_id
+           WHERE v.id = ?""",
+        (voyage_id,),
+    ).fetchone()
+    if voyage is None:
+        flash("Voyage introuvable.", "erreur")
+        return redirect(url_for("admin_tableau"))
+    passagers = bdd.execute(
+        """SELECT nom, telephone, numero_siege, code_reservation
+           FROM billets WHERE voyage_id = ?
+           ORDER BY numero_siege""",
+        (voyage_id,),
+    ).fetchall()
+    return render_template(
+        "admin/passagers.html", voyage=voyage, passagers=passagers
+    )
+
+
+@app.route("/admin/voyages/<int:voyage_id>/annuler", methods=["POST"])
+@administrateur_requis
+def admin_annuler(voyage_id):
+    """Annule un voyage prévu : statut -> annulé (FR-012, POST)."""
+    bdd = get_db()
+    voyage = bdd.execute(
+        "SELECT statut FROM voyages WHERE id = ?", (voyage_id,)
+    ).fetchone()
+    if voyage is None:
+        flash("Voyage introuvable.", "erreur")
+        return redirect(url_for("admin_tableau"))
+    if voyage["statut"] != "prévu":
+        flash("Seul un voyage prévu peut être annulé.", "erreur")
+        return redirect(url_for("admin_tableau"))
+    bdd.execute(
+        "UPDATE voyages SET statut = 'annulé' WHERE id = ?", (voyage_id,)
+    )
+    bdd.commit()
+    flash("Voyage annulé.", "succes")
+    return redirect(url_for("admin_tableau"))
+
+
+@app.route("/admin/voyages/<int:voyage_id>/parti", methods=["POST"])
+@administrateur_requis
+def admin_parti(voyage_id):
+    """Marque un voyage comme parti : statut -> parti (FR-012, POST)."""
+    bdd = get_db()
+    voyage = bdd.execute(
+        "SELECT statut FROM voyages WHERE id = ?", (voyage_id,)
+    ).fetchone()
+    if voyage is None:
+        flash("Voyage introuvable.", "erreur")
+        return redirect(url_for("admin_tableau"))
+    if voyage["statut"] != "prévu":
+        flash("Seul un voyage prévu peut être marqué parti.", "erreur")
+        return redirect(url_for("admin_tableau"))
+    bdd.execute(
+        "UPDATE voyages SET statut = 'parti' WHERE id = ?", (voyage_id,)
+    )
+    bdd.commit()
+    flash("Voyage marqué comme parti.", "succes")
+    return redirect(url_for("admin_tableau"))
+
+
 # --- Page d'erreur 404 personnalisée ----------------------------------------
 @app.errorhandler(404)
 def page_introuvable(exception):
