@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block titre %}Confirmation de réservation{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>Billet réservé — votre code de réservation</h2>
+
+  <p><strong>{{ billet.ville_depart }} → {{ billet.ville_arrivee }}</strong>
+     le {{ billet.date }} à {{ billet.heure }}</p>
+  <p>Siège n° {{ billet.numero_siege }} — Passager : {{ billet.nom }}</p>
+
+  <p>
+    Présentez ce code à la gare pour récupérer votre billet :
+  </p>
+  <p><span class="code-reservation">{{ billet.code_reservation }}</span></p>
+
+  <p class="legende">Conservez ce code : il permet de retrouver votre billet
+     à tout moment depuis la page « Retrouver un billet ».</p>
+
+  <p><a class="btn" href="{{ url_for('recherche') }}">Retour à l'accueil</a></p>
+</section>
+{% endblock %}

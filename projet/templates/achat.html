@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block titre %}Choisir un siège{% endblock %}
+
+{% block contenu %}
+<section>
+  <h2>{{ voyage.ville_depart }} → {{ voyage.ville_arrivee }} — {{ voyage.date }} à {{ voyage.heure }}</h2>
+  <p>
+    Bus {{ voyage.type_bus }} — {{ voyage.nombre_places }} places —
+    <strong>{{ voyage.prix }} FCFA</strong>
+  </p>
+
+  <p class="legende">
+    Cliquez sur un siège libre pour le choisir. Les sièges grisés sont déjà vendus.
+  </p>
+
+  <div id="plan-sieges" data-voyage="{{ voyage.id }}" role="group"
+       aria-label="Plan des sièges du bus">
+    <p id="chargement-sieges">Chargement du plan des sièges…</p>
+  </div>
+
+  <form class="cadre" id="formulaire-achat" method="post"
+        action="{{ url_for('achat_enregistrer', voyage_id=voyage.id) }}">
+    <input type="hidden" id="numero_siege" name="numero_siege" value="">
+
+    <div>
+      <label for="nom">Nom complet du voyageur</label>
+      <input type="text" id="nom" name="nom" required maxlength="100"
+             autocomplete="name">
+    </div>
+    <div>
+      <label for="telephone">Téléphone</label>
+      <input type="tel" id="telephone" name="telephone" required
+             placeholder="6XXXXXXXX ou +2376XXXXXXXX" autocomplete="tel">
+    </div>
+    <div>
+      <label for="piece_identite">Numéro de pièce d'identité</label>
+      <input type="text" id="piece_identite" name="piece_identite" required
+             maxlength="50">
+    </div>
+
+    <p id="message-siege" class="flash" hidden></p>
+    <button type="submit" id="bouton-achat" disabled>Acheter le billet</button>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sieges.js') }}"></script>
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+{% endblock %}

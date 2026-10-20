@@ -127,6 +127,165 @@ def resultats():
     )
 
 
+# --- Parcours public : achat avec choix du siège (US2) ----------------------
+def charger_voyage(voyage_id):
+    """Retourne la ligne complète du voyage ou None."""
+    return get_db().execute(
+        """SELECT v.id, v.date, v.heure, v.statut,
+                  b.nombre_places, b.type AS type_bus,
+                  t.ville_depart, t.ville_arrivee,
+                  CASE WHEN b.type = 'vip' THEN t.prix_vip
+                       ELSE t.prix_classique END AS prix
+           FROM voyages v
+           JOIN bus b ON b.id = v.bus_id
+           JOIN trajets t ON t.id = v.trajet_id
+           WHERE v.id = ?""",
+        (voyage_id,),
+    ).fetchone()
+
+
+def voyage_achetable(voyage):
+    """Un voyage est achetable s'il est prévu, à venir et non complet (FR-007)."""
+    if voyage is None or voyage["statut"] != "prévu":
+        return False
+    if voyage["date"] < date.today().isoformat():
+        return False
+    restantes = get_db().execute(
+        """SELECT b.nombre_places - COUNT(bl.id) AS restantes
+           FROM voyages v
+           JOIN bus b ON b.id = v.bus_id
+           LEFT JOIN billets bl ON bl.voyage_id = v.id
+           WHERE v.id = ?
+           GROUP BY b.nombre_places""",
+        (voyage["id"],),
+    ).fetchone()
+    return restantes is not None and restantes["restantes"] > 0
+
+
+@app.route("/api/voyages/<int:voyage_id>/sieges")
+def api_sieges(voyage_id):
+    """État des sièges d'un voyage au format JSON (contrat api.md §1)."""
+    voyage = charger_voyage(voyage_id)
+    if voyage is None:
+        return jsonify({"erreur": "Voyage introuvable"}), 404
+    bdd = get_db()
+    vendus = {
+        ligne["numero_siege"]
+        for ligne in bdd.execute(
+            "SELECT numero_siege FROM billets WHERE voyage_id = ?",
+            (voyage_id,),
+        )
+    }
+    sieges = [
+        {"numero": numero, "pris": numero in vendus}
+        for numero in range(1, voyage["nombre_places"] + 1)
+    ]
+    return jsonify({
+        "voyage": voyage_id,
+        "total_places": voyage["nombre_places"],
+        "prix": int(voyage["prix"]),
+        "sieges": sieges,
+    })
+
+
+@app.route("/voyages/<int:voyage_id>/acheter", methods=["GET"])
+def achat_page(voyage_id):
+    """Page d'achat : plan du bus + formulaire (FR-002, FR-003)."""
+    voyage = charger_voyage(voyage_id)
+    if voyage is None:
+        flash("Voyage introuvable.", "erreur")
+        return redirect(url_for("recherche"))
+    if not voyage_achetable(voyage):
+        flash("Ce voyage n'est plus achetable (annulé, parti, passé ou complet).",
+              "erreur")
+        return redirect(url_for("recherche"))
+    return render_template("achat.html", voyage=voyage)
+
+
+@app.route("/voyages/<int:voyage_id>/acheter", methods=["POST"])
+def achat_enregistrer(voyage_id):
+    """Enregistre un billet après revérification complète serveur (FR-015)."""
+    voyage = charger_voyage(voyage_id)
+    if voyage is None or not voyage_achetable(voyage):
+        flash("Ce voyage n'est pas achetable.", "erreur")
+        return redirect(url_for("recherche"))
+
+    nom = request.form.get("nom", "").strip()
+    telephone = request.form.get("telephone", "").strip()
+    piece = request.form.get("piece_identite", "").strip()
+    brut_siege = request.form.get("numero_siege", "").strip()
+
+    # --- Revérification de chaque champ côté serveur (constitution I) ---
+    erreurs = []
+    if not nom:
+        erreurs.append("Le nom est obligatoire.")
+    if not REGEX_TELEPHONE.match(telephone):
+        erreurs.append("Numéro de téléphone invalide (ex. 6XXXXXXXX ou +2376XXXXXXXX).")
+    if not piece:
+        erreurs.append("Le numéro de pièce d'identité est obligatoire.")
+    try:
+        numero_siege = int(brut_siege)
+    except ValueError:
+        numero_siege = -1
+    if not 1 <= numero_siege <= voyage["nombre_places"]:
+        erreurs.append(
+            f"Numéro de siège invalide (attendu entre 1 et {voyage['nombre_places']})."
+        )
+    if erreurs:
+        for message in erreurs:
+            flash(message, "erreur")
+        return redirect(url_for("achat_page", voyage_id=voyage_id))
+
+    bdd = get_db()
+    # Génération du code unique et non devinable (module secrets, FR-003)
+    while True:
+        code = secrets.token_urlsafe(8)
+        libre = bdd.execute(
+            "SELECT 1 FROM billets WHERE code_reservation = ?", (code,)
+        ).fetchone()
+        if libre is None:
+            break
+
+    try:
+        bdd.execute(
+            """INSERT INTO billets
+               (voyage_id, numero_siege, nom, telephone, piece_identite,
+                code_reservation, date_achat)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (voyage_id, numero_siege, nom, telephone, piece, code,
+             date.today().isoformat()),
+        )
+        bdd.commit()
+    except sqlite3.IntegrityError:
+        # UNIQUE (voyage_id, numero_siege) : siège vendu entre-temps
+        bdd.rollback()
+        flash("Ce siège vient d'être vendu, choisissez-en un autre.", "erreur")
+        return redirect(url_for("achat_page", voyage_id=voyage_id))
+
+    flash("Billet acheté avec succès.", "succes")
+    return redirect(url_for("confirmation", code=code))
+
+
+@app.route("/confirmation")
+def confirmation():
+    """Affiche le code de réservation et le récapitulatif (FR-003)."""
+    code = request.args.get("code", "")
+    billet = get_db().execute(
+        """SELECT bl.nom, bl.numero_siege, bl.code_reservation,
+                  v.date, v.heure,
+                  t.ville_depart, t.ville_arrivee
+           FROM billets bl
+           JOIN voyages v ON v.id = bl.voyage_id
+           JOIN trajets t ON t.id = v.trajet_id
+           WHERE bl.code_reservation = ?""",
+        (code,),
+    ).fetchone()
+    if billet is None:
+        flash("Billet introuvable pour ce code.", "erreur")
+        return redirect(url_for("recherche"))
+    return render_template("confirmation.html", billet=billet)
+
+
 # --- Page d'erreur 404 personnalisée ----------------------------------------
 @app.errorhandler(404)
 def page_introuvable(exception):
