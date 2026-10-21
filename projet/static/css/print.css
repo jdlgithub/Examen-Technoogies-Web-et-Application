@@ -1,9 +1,11 @@
 /* Feuille dédiée à l'impression (liste des passagers).
-   Masque la navigation et les boutons ; le tableau reste lisible en noir
-   et blanc. */
+   À l'impression, seule la liste est conservée : titre du voyage, ligne
+   récapitulative (bus, passagers/places, statut) et tableau. L'en-tête du
+   site, la navigation admin, les messages flash et les boutons sont masqués. */
 
 @media print {
-  header nav,
+  header,
+  .messages,
   .pas-a-imprimer,
   button,
   .btn {
