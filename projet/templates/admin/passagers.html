@@ -2,10 +2,6 @@
 
 {% block titre %}Administration - Passagers{% endblock %}
 
-{% block liens_admin %}
-  <li><a href="{{ url_for('admin_passagers', voyage_id=voyage.id) }}">Passagers</a></li>
-{% endblock %}
-
 {% block contenu_admin %}
 <section>
   <h2>Passagers — {{ voyage.ville_depart }} → {{ voyage.ville_arrivee }}

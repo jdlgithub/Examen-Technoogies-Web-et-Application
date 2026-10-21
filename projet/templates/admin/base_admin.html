@@ -6,6 +6,7 @@
   <li><strong>Admin : {{ session.admin_nom }}</strong></li>
   <li><a href="{{ url_for('admin_tableau') }}">Tableau de bord</a></li>
   <li><a href="{{ url_for('admin_voyage_nouveau') }}">Programmer un voyage</a></li>
+  <li><a href="{{ url_for('admin_statistiques') }}">Statistiques</a></li>
   {% block liens_admin %}{% endblock %}
   <li>
     <form method="post" action="{{ url_for('admin_deconnexion') }}" style="display:inline">
