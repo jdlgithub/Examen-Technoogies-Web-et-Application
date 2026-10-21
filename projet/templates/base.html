@@ -17,6 +17,9 @@
       <ul>
         <li><a href="{{ url_for('recherche') }}">Accueil</a></li>
         <li><a href="{{ url_for('billets_formulaire') }}">Retrouver un billet</a></li>
+        {% if not session.admin_id %}
+        <li><a href="{{ url_for('admin_connexion') }}">Administration</a></li>
+        {% endif %}
         {% block liens_navigation %}{% endblock %}
       </ul>
     </nav>
@@ -35,10 +38,6 @@
 
     {% block contenu %}{% endblock %}
   </main>
-
-  <footer>
-    <p>Groupe 04 — Technologies Web et Applications. Agence reliant Douala, Yaoundé, Bafoussam, Kribi et Buea.</p>
-  </footer>
 
   {% block scripts %}{% endblock %}
 </body>
