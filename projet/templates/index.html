@@ -10,6 +10,7 @@
       <div>
         <label for="depart">Ville de départ</label>
         <select id="depart" name="depart" required>
+          <option value="">— Choisir une ville —</option>
           {% for ville in villes %}
             <option value="{{ ville }}">{{ ville }}</option>
           {% endfor %}
@@ -18,6 +19,7 @@
       <div>
         <label for="arrivee">Ville d'arrivée</label>
         <select id="arrivee" name="arrivee" required>
+          <option value="">— Choisir une ville —</option>
           {% for ville in villes %}
             <option value="{{ ville }}">{{ ville }}</option>
           {% endfor %}
