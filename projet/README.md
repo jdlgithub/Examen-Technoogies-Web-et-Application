@@ -123,7 +123,8 @@ projet/
 
 1. `admin/Tableau de bord` — derniers voyages, statut, billets vendus
 2. `Programmer un voyage` — trajet, bus, date, heure
-3. `Passagers` — liste par siège, bouton **Imprimer** (Ctrl+P propre)
+3. `Passagers` — liste par siège, bouton **Imprimer** (à l'impression il ne
+   reste que le titre du voyage, la ligne récapitulative et le tableau)
 4. Boutons **Parti** / **Annuler** par voyage (annulé → retiré de la
    recherche et de l'achat)
 5. `Statistiques` — remplissage par trajet, recette par semaine, heures
@@ -145,7 +146,65 @@ sqlite3 nouveau.db < export_projet.sql
 python -c "import sqlite3; sqlite3.connect('nouveau.db').executescript(open('export_projet.sql', encoding='utf-8').read())"
 ```
 
-## 8. Résolution des problèmes courants
+## 8. Tester sur smartphone (réseau local)
+
+Le smartphone doit être connecté au **même réseau Wi-Fi** que le PC (pas de
+données mobiles). L'étape 8.1 est à faire **une seule fois**.
+
+### 8.1. Une seule fois : autoriser le pare-feu (Windows)
+
+Le pare-feu bloque par défaut les connexions entrantes vers Python. Ouvrir
+**PowerShell en tant qu'administrateur** (clic droit sur Démarrer →
+« PowerShell (administrateur) ») et exécuter :
+
+```powershell
+New-NetFirewallRule -DisplayName "Projet bus - Flask port 5000" -Direction Inbound -Protocol TCP -LocalPort 5000 -Action Allow -Profile Private
+```
+
+> Variante : si Windows affiche la fenêtre « Le pare-feu Windows a bloqué
+> certaines fonctionnalités de cette application » au lancement du serveur,
+> cliquer sur **Autoriser l'accès** crée le même effet.
+
+Vérifier que la règle existe :
+`Get-NetFirewallRule -DisplayName "Projet bus - Flask port 5000"`
+
+### 8.2. Trouver l'adresse IP du PC
+
+```bash
+ipconfig
+```
+
+Noter l'adresse **IPv4** de l'adaptateur **Wi-Fi** (ex. `10.107.153.109`).
+Ignorer les adresses `169.254.x.x` (hors réseau) et `172.x.x.x`
+(WSL/VirtualBox), ce ne sont pas celles du Wi-Fi.
+
+### 8.3. Lancer le serveur visible depuis le réseau
+
+```bash
+cd projet
+python -c "from app import app; app.run(host='0.0.0.0', port=5000, debug=False)"
+```
+
+Par défaut le serveur n'écoute que sur le PC (`127.0.0.1`) : le smartphone
+ne peut pas le voir. `host='0.0.0.0'` l'ouvre à tout le réseau local.
+Arrêt : `Ctrl+C`.
+
+### 8.4. Ouvrir l'application sur le téléphone
+
+Navigateur du smartphone → `http://<IP-du-PC>:5000`
+(ex. `http://10.107.153.109:5000`). L'interface est mobile-first : plan de
+sièges et tableaux défilent horizontalement.
+
+### 8.5. Dépannage smartphone
+
+| Symptôme | Cause | Solution |
+|----------|-------|----------|
+| La page ne se charge pas sur le téléphone | Mauvais réseau | Vérifier que téléphone et PC sont sur le **même Wi-Fi**, puis retester |
+| Pare-feu qui refuse | Règle absente | Relancer la commande de 8.1 en **administrateur** |
+| L'IP ne fonctionne plus | Adresse changée | Relancer `ipconfig` après redémarrage du PC et mettre à jour l'URL |
+| IP `169.254…` ou `172…` notée | Mauvais adaptateur | Prendre l'IPv4 de l'adaptateur **Wi-Fi**, pas un autre |
+
+## 9. Résolution des problèmes courants
 
 | Symptôme | Cause | Solution |
 |----------|-------|----------|
@@ -157,8 +216,9 @@ python -c "import sqlite3; sqlite3.connect('nouveau.db').executescript(open('exp
 | Police Roboto non chargée (hors ligne) | Pas d'accès réseau | Sans impact : repli `Segoe UI`/Arial automatique |
 | `sqlite3.OperationalError: database is locked` | Deux écritures simultanées | Fermer les autres sessions Python, relancer |
 | Les captures/affichages semblent coupés à 360 px | — | Prévu : les tableaux défilent horizontalement dans leur cadre (`.defilement`), la page ne déborde pas |
+| Le smartphone n'ouvre pas le site | IP, réseau ou pare-feu | Voir la procédure complète de la **section 8** |
 
-## 9. Validation
+## 10. Validation
 
 Le guide d'acceptation complet (scénarios **S1 à S12**) se trouve dans
 `../specs/001-bus-ticket-reservation/quickstart.md` : chaque scénario décrit
